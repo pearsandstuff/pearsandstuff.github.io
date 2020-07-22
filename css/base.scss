@@ -1,0 +1,19 @@
+---
+---
+@import "variables";
+
+html, body {
+	margin: 0;
+	height: 100%;
+	background-color: $color-background-body;
+	color: $color-text-body;
+	font-family: $font-family-text;
+}
+
+a {
+	color: $color-text-link;
+	
+	&:hover {
+		text-decoration: none;
+	}
+}

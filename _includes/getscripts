@@ -1,0 +1,34 @@
+{% for script in page.scripts %}
+    {% capture name %}{{ script }}{% endcapture %}
+    {% capture path %}{{ include.path }}{% endcapture %}
+    {% assign async = false %}
+    {% assign defer = false %}
+    {% assign afterbody = false %}
+    {% if script.first %}
+        {% capture name %}{{ script.first[0] }}{% endcapture %}
+        {% if script.first[1].external %}
+            {% assign path = "" %}
+        {% endif %}
+        {% if script.first[1].async %}
+            {% assign async = true %}
+        {% endif %}
+        {% if script.first[1].defer %}
+            {% assign defer = true %}
+        {% endif %}
+        {% if script.first[1].afterbody or script.first[1].afterbody %}
+            {% assign afterbody = true %}
+        {% endif %}
+        {% if script.first[1].path %}
+            {% capture path %}{{ script.first[1].path }}/{% endcapture %}
+        {% endif %}
+    {% endif %}
+    {% if include.afterbody %}
+        {% if afterbody %}
+            <script type="text/javascript" src="{{ path }}{{ name }}"{% if async %} async{% endif %}{% if defer %} defer{% endif %}></script>
+        {% endif %}
+    {% else %}
+        {% unless afterbody %}
+            <script type="text/javascript" src="{{ path }}{{ name }}"{% if async %} async{% endif %}{% if defer %} defer{% endif %}></script>
+        {% endunless %}
+    {% endif %}
+{% endfor %}

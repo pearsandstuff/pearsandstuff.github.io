@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>{{ page.title }}</title>
+	{% if page.webapp %}
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="{{ page.title }}">
+    <meta name="application-name" content="{{ page.title }}">
+    <meta name="msapplication-TileColor" content="#00aba9">
+    <meta name="msapplication-config" content="{{ site.baseurl }}meta/browserconfig.xml">
+    {% endif %}
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ site.baseurl }}/meta/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ site.baseurl }}/meta/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ site.baseurl }}/meta/favicon-16x16.png">
+    <link rel="manifest" href="{{ site.baseurl }}/meta/site.webmanifest">
+    <link rel="mask-icon" href="{{ site.baseurl }}meta/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="{{ site.baseurl }}/meta/favicon.ico">
+    <meta name="theme-color" content="#fafafa">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400|Fjalla+One:400" rel="stylesheet" type="text/css">
+    {% include getgooglefonts %}
+    <link href="/css/base.css" rel="stylesheet" type="text/css">
+    {% capture stylespath %}{{ site.baseurl }}/css/{% endcapture %}
+    {% include getstyles path=stylespath %}
+    <script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-auth.js"></script>
+	<script src="/scripts/firebase.js"></script>
+	<script src="/scripts/auth.js"></script>
+    {% if page.authrequired %}<script src="/scripts/ensureuser.js"></script>{% endif %}
+    {% capture scriptspath %}{{ site.baseurl }}/scripts/{% endcapture %}
+    {% include getscripts path=scriptspath afterbody=false %}
+</head>
+<body>
+	<div style="height:100%">
+		{{ content }}
+	</div>
+	{% include getscripts path=scriptspath afterbody=true %}
+</body>
+</html>

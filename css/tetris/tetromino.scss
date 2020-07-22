@@ -1,0 +1,191 @@
+---
+---
+@import "variables";
+
+.gp_type_S.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(6)),
+.gp_type_S.gp_rot_180 div:not(:nth-child(1)):not(:nth-child(6)),
+.gp_type_S.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(5)),
+.gp_type_S.gp_rot_270 div:not(:nth-child(2)):not(:nth-child(5)),
+.gp_type_Z.gp_rot_0 div:not(:nth-child(3)):not(:nth-child(4)),
+.gp_type_Z.gp_rot_180 div:not(:nth-child(3)):not(:nth-child(4)),
+.gp_type_Z.gp_rot_90 div:not(:nth-child(1)):not(:nth-child(6)),
+.gp_type_Z.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(6)),
+.gp_type_L.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(2)),
+.gp_type_L.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(4)),
+.gp_type_L.gp_rot_180 div:not(:nth-child(5)):not(:nth-child(6)),
+.gp_type_L.gp_rot_270 div:not(:nth-child(3)):not(:nth-child(5)),
+.gp_type_J.gp_rot_0 div:not(:nth-child(2)):not(:nth-child(3)),
+.gp_type_J.gp_rot_90 div:not(:nth-child(4)):not(:nth-child(6)),
+.gp_type_J.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(5)),
+.gp_type_J.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(3)),
+.gp_type_T.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(3)),
+.gp_type_T.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(6)),
+.gp_type_T.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(6)),
+.gp_type_T.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(5)) {
+	background: #424242;
+}
+
+.gp_type_ {
+	&I {
+		#locked &, div {
+			background-color: $color-background-body;
+		}
+	}
+
+	&O {
+		#locked &, div {
+			background-color: $color-background-body;
+		}
+	}
+
+	&S {
+		#locked & {
+			background-color: $color-background-body;
+		}
+	}
+
+	&Z {
+		#locked & {
+			background-color: $color-background-body;
+		}
+	}
+
+	&L {
+		#locked & {
+			background-color: $color-background-body;
+		}
+	}
+
+	&J {
+		#locked & {
+			background-color: $color-background-body;
+		}
+	}
+
+	&T {
+		#locked & {
+			background-color: $color-background-body;
+		}
+	}
+}
+
+#locked .gp_type_I:after,
+.gp_type_I div:after {
+	background-image: url(/svg/tetris/tetromino/I.svg);
+}
+
+#locked .gp_type_O:after,
+.gp_type_O div:after {
+	background-image: url(/svg/tetris/tetromino/O.svg);
+}
+
+#locked .gp_type_S:after,
+.gp_type_S.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_S.gp_rot_180 div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_S.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(5)):after,
+.gp_type_S.gp_rot_270 div:not(:nth-child(2)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/S.svg);
+}
+
+#locked .gp_type_Z:after,
+.gp_type_Z.gp_rot_0 div:not(:nth-child(3)):not(:nth-child(4)):after,
+.gp_type_Z.gp_rot_180 div:not(:nth-child(3)):not(:nth-child(4)):after,
+.gp_type_Z.gp_rot_90 div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_Z.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(6)):after {
+	background-image: url(/svg/tetris/tetromino/Z.svg);
+}
+
+#locked .gp_type_L:after,
+.gp_type_L.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(2)):after,
+.gp_type_L.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(4)):after,
+.gp_type_L.gp_rot_180 div:not(:nth-child(5)):not(:nth-child(6)):after,
+.gp_type_L.gp_rot_270 div:not(:nth-child(3)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/L.svg);
+}
+
+#locked .gp_type_J:after,
+.gp_type_J.gp_rot_0 div:not(:nth-child(2)):not(:nth-child(3)):after,
+.gp_type_J.gp_rot_90 div:not(:nth-child(4)):not(:nth-child(6)):after,
+.gp_type_J.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(5)):after,
+.gp_type_J.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(3)):after {
+	background-image: url(/svg/tetris/tetromino/J.svg);
+}
+
+#locked .gp_type_T:after,
+.gp_type_T.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(3)):after,
+.gp_type_T.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(6)):after,
+.gp_type_T.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(6)):after,
+.gp_type_T.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/T.svg);
+}
+
+.gp_type_I.flashing div:after {
+	background-image: url(/svg/tetris/tetromino/I.flash.svg);
+}
+
+.gp_type_O.flashing div:after {
+	background-image: url(/svg/tetris/tetromino/O.flash.svg);
+}
+
+.gp_type_S.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_S.gp_rot_180.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_S.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(5)):after,
+.gp_type_S.gp_rot_270.flashing div:not(:nth-child(2)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/S.flash.svg);
+}
+
+.gp_type_Z.gp_rot_0.flashing div:not(:nth-child(3)):not(:nth-child(4)):after,
+.gp_type_Z.gp_rot_180.flashing div:not(:nth-child(3)):not(:nth-child(4)):after,
+.gp_type_Z.gp_rot_90.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
+.gp_type_Z.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(6)):after {
+	background-image: url(/svg/tetris/tetromino/Z.flash.svg);
+}
+
+.gp_type_L.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(2)):after,
+.gp_type_L.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(4)):after,
+.gp_type_L.gp_rot_180.flashing div:not(:nth-child(5)):not(:nth-child(6)):after,
+.gp_type_L.gp_rot_270.flashing div:not(:nth-child(3)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/L.flash.svg);
+}
+
+.gp_type_J.gp_rot_0.flashing div:not(:nth-child(2)):not(:nth-child(3)):after,
+.gp_type_J.gp_rot_90.flashing div:not(:nth-child(4)):not(:nth-child(6)):after,
+.gp_type_J.gp_rot_180.flashing div:not(:nth-child(4)):not(:nth-child(5)):after,
+.gp_type_J.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(3)):after {
+	background-image: url(/svg/tetris/tetromino/J.flash.svg);
+}
+
+.gp_type_T.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(3)):after,
+.gp_type_T.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(6)):after,
+.gp_type_T.gp_rot_180.flashing div:not(:nth-child(4)):not(:nth-child(6)):after,
+.gp_type_T.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(5)):after {
+	background-image: url(/svg/tetris/tetromino/T.flash.svg);
+}
+
+#locked .flashing .gp_type_I:after {
+	background-image: url(/svg/tetris/tetromino/I.flash.svg);
+}
+
+#locked .flashing .gp_type_O:after {
+	background-image: url(/svg/tetris/tetromino/O.flash.svg);
+}
+
+#locked .flashing .gp_type_S:after {
+	background-image: url(/svg/tetris/tetromino/S.flash.svg);
+}
+
+#locked .flashing .gp_type_Z:after {
+	background-image: url(/svg/tetris/tetromino/Z.flash.svg);
+}
+
+#locked .flashing .gp_type_L:after {
+	background-image: url(/svg/tetris/tetromino/L.flash.svg);
+}
+
+#locked .flashing .gp_type_J:after {
+	background-image: url(/svg/tetris/tetromino/J.flash.svg);
+}
+
+#locked .flashing .gp_type_T:after {
+	background-image: url(/svg/tetris/tetromino/T.flash.svg);
+}

@@ -1,0 +1,101 @@
+$color-background-body: #333D47;
+$color-text-body: white;
+$color-background-body-overlay: darken($color-background-body, 4%);
+$color-text-body-overlay: white;
+$color-background-button: #00838F;
+$color-text-button: white;
+$color-text-link: #66D9EF;
+$font-family-header: "Fjalla One", Arial, sans-serif;
+$font-family-text: "Roboto", Arial, sans-serif;
+$box-shadow-offset-x: 3.5px;
+$box-shadow-offset-y: 7px;
+$box-shadow-offset: $box-shadow-offset-x $box-shadow-offset-y 0 0;
+
+@mixin animation-keyframes {
+	// $animation-number: 0 !default !global;
+	// $animation-number: $animation-number + 1 !global;
+	// $name: unquote("การเคลื่อนไหวที่-#{$animation-number}");
+	$name: animation-#{unique-id()};
+	animation-name: $name;
+	@at-root {
+		@keyframes #{$name} {
+			@content;
+		}
+	}
+}
+
+@mixin drop-shadow(
+	$background-color,
+	$box-shadow-color: scale-color($background-color, $lightness: -25%),
+	$scale: 1
+) {
+	background-color: $background-color;
+	box-shadow: $box-shadow-offset-x * $scale $box-shadow-offset-y * $scale 0 0 $box-shadow-color;
+}
+
+@mixin button(
+	$background-color: $color-background-button,
+	$offset-x: 0,
+	$offset-y: 0,
+	$scale: 1,
+	$left: 0,
+	$top: 0
+) {
+	@include drop-shadow($background-color, $scale: $scale);
+
+	cursor: pointer;
+	position: relative;
+	left: $left - $box-shadow-offset-x * $offset-x * $scale;
+	top: $top - $box-shadow-offset-y * $offset-y * $scale;
+	outline: none;
+	border: none;
+	font-family: $font-family-text;
+
+	&:hover,
+	&:focus {
+		box-shadow: none;
+		left: $left - $box-shadow-offset-x * ($offset-x - 1) * $scale;
+		top: $top - $box-shadow-offset-y * ($offset-y - 1) * $scale;
+
+		&:before {
+			display: block;
+			height: 100%;
+			width: 100%;
+			position: absolute;
+			content: "\00a0";
+			opacity: 0;
+			left: -$box-shadow-offset-x * $scale;
+			top: -$box-shadow-offset-y * $scale;
+			border-radius: inherit;
+		}
+	}
+}
+
+@mixin textfield(
+	$background-color: white,
+	$normal-color: scale-color($background-color, $lightness: -25%),
+	$focus-color: $color-background-button,
+	$disabled-color: scale-color(scale-color(white, $lightness: -25%), $lightness: -25%),
+	$invalid-color: red
+) {
+	outline: none;
+	background-color: $background-color;
+	border-width: 0 0 .125em;
+	border-style: solid;
+	border-color:  $normal-color;
+	font-family: $font-family-text;
+
+	&:focus {
+		border-color: $focus-color;
+	}
+
+	&:invalid {
+		border-color: $invalid-color;
+	}
+
+	&:disabled {
+		border-color: $disabled-color;
+		cursor: default;
+		background-color: scale-color($background-color, $lightness: -25%, $saturation: -25%);
+	}
+}

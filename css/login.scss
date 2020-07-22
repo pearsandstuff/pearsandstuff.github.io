@@ -1,0 +1,110 @@
+---
+---
+@import "variables";
+@use "sass:color";
+
+#parentflex {
+	$padding: 2em;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	min-height: calc(100% - #{$padding});
+	padding: $padding 0;
+}
+
+#icon {
+	$padding: 2.5em;
+
+	@include drop-shadow($color-background-body-overlay);
+
+	height: 20em;
+	width: 20em;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	max-width: calc(80vw - #{$padding * 2});
+	max-height: calc(80vw - #{$padding * 2});
+	background-color: $color-background-body-overlay;
+	padding: $padding;
+	border-radius: 50%;
+	margin: 0 auto calc(1em + #{$box-shadow-offset-y});
+}
+
+#form {
+	$padding-sides: 2em;
+
+	@include drop-shadow($color-background-body-overlay);
+
+	font-size: 1em;
+	display: block;
+	width: 40em;
+	max-width: calc(95% - #{$padding-sides * 2});
+	margin: auto;
+	padding: 1.5em $padding-sides;
+	border-radius: .5em;
+}
+
+#pw {
+	$padding-sides: .5em;
+
+	@include textfield();
+
+	display: block;
+	color: #000;
+	font-size: 2em;
+	border-radius: inherit;
+	padding: .125em $padding-sides;
+	width: calc(100% - #{$padding-sides * 2});
+
+	&:disabled {
+		background-color: scale-color(white, $saturation: -25%, $lightness: -25%);
+	}
+}
+
+#login_btn {
+	@include button($background-color: $color-background-button, $offset-x: 0.5, $scale: 0.5);
+
+	display: block;
+	color: #FFF;
+	font-size: 2em;
+	border-radius: inherit;
+	padding: .125em .5em;
+	margin: .5em auto 0;
+}
+
+#reload {
+	background: none;
+	border: none;
+	padding: 0;
+	color: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#disconnected,
+#wrong_pw,
+#too_many,
+#empty_pw {
+	display: none;
+	color: $color-text-body;
+	font-size: 1.35em;
+	text-align: center;
+	padding: 0 10%;
+	margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+	#disconnected,
+	#wrong_pw,
+	#too_many,
+	#empty_pw {
+		font-size: 1.2em;
+	}
+
+	#pw,
+	#login_btn {
+		font-size: 1.5em;
+	}
+}

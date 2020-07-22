@@ -1,0 +1,3 @@
+{% for style in page.styles %}
+    <link href="{{ include.path | default: "/" }}{{ style }}" rel="stylesheet" type="text/css">
+{% endfor %}

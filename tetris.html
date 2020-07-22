@@ -1,1286 +1,319 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<meta name="HandheldFriendly" content="true" />
-	<title>Tetris</title>
-	<link href="https://fonts.googleapis.com/css?family=Baloo" rel="stylesheet">
-	<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};
-		gtag('js',new Date());
-		gtag('config','UA-91403443-3');</script>
-	<style>
-		html, body {
-			margin: 0;
-			touch-action: manipulation;
-			touch-action: none;
-			-webkit-touch-callout: none;
-			-webkit-user-select: none;
-			-khtml-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
-			height: 100%;
-			background: #424242;
-			font-family: Baloo, Arial, sans-serif;
-		}
-
-		body.playing {
-			overflow-y: hidden;
-		}
-
-		button {
-			font-family: Baloo, Arial, sans-serif;
-			outline: 0;
-		}
-
-		#layout, #layout_outer {
-			height: 100%;
-			display: flex;
-		}
-
-		#new_score_1 {
-			font-size: 2.25em;
-			text-align: center;
-			margin-top: .6em;
-		}
-
-		#new_score_2 {
-			font-size: 1.5em;
-			text-align: center;
-		}
-
-		#new_score_2 div {
-			padding: 0 10%;
-			line-height: 1.1;
-			margin-bottom: .5em;
-		}
-
-		#new_score_3 {
-			padding: 0 10%;
-			font-size: 1.2em;
-			text-align: center;
-		}
-
-		body:not(.playing) #layout_outer,
-		body.playing #not_playing,
-		#new_score_1,
-		#new_score_2,
-		#new_score_3 {
-			display: none;
-		}
-
-		body:not(.playing) #not_playing,
-		body.playing #layout_outer {
-			display: flex;
-		}
-
-		body.new_score #new_score_1,
-		body.new_score:not(.scores_err) #new_score_2,
-		body.new_score.scores_err #new_score_3 {
-			display: block;
-		}
-
-		#start {
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			overflow-y: auto;
-			color: #FFF;
-		}
-
-		#not_playing > #restart {
-			display: none;
-		}
-
-		#start #restart ~ * {
-			display: none;
-		}
-
-		.statrow {
-			display: flex;
-			justify-content: space-around;
-			flex-wrap: wrap;
-			position: relative;
-		}
-
-		.statrow ~ .statrow:before {
-			content: " ";
-			position: absolute;
-			width: 80%;
-			height: .2em;
-			top: -.95em;
-			background: #FFF;
-			opacity: .3;
-		}
-
-		.statrow ~ .statrow {
-			margin-top: 1.7em;
-		}
-
-		.statrow:last-of-type {
-			margin-bottom: .7em;
-		}
-
-		.statcell {
-			margin: 0 .5em;
-			text-align: center;
-		}
-
-		.statcell > div:first-child,
-		#stat_row_line_piece .statcell > div:nth-child(2) {
-			font-size: 2em;
-			line-height: 1.05;
-		}
-
-		#stat_row_line_piece .statcell > div:nth-child(2) {
-			margin-top: .2em;
-		}
-
-		.statcell > div:nth-child(2),
-		#stat_row_line_piece .statcell > div:first-child {
-			font-size: 1.1em;
-		}
-
-		.statcellpiecegrid {
-			display: grid;
-			height: 2.8em;
-			width: 4.2em;
-			grid-gap: 1px;
-			gap: 1px;
-		}
-
-		.statcellpiecegrid div {
-			height: 1.4em;
-			width: 1.4em;
-			background-size: 0;
-			position: relative;
-		}
-
-		.statcellpiecegrid div:after {
-			background-image: inherit;
-			content: " ";
-			position: absolute;
-			height: 140%;
-			width: 140%;
-			top: -20%;
-			left: -20%;
-		}
-
-		h1 {
-			text-align: center;
-			font-size: 2.5em;
-			margin: 0;
-		}
-
-		#fin_score {
-			font-size: 3.5em;
-			text-align: center;
-			line-height: 1;
-			margin: .8em 0 .2em;
-		}
-
-		body.new_score #fin_score {
-			margin: .3em 0;
-		}
-
-		#fin_level, #fin_lines {
-			font-size: 2.5em;
-		}
-
-		#start img {
-			width: 70%;
-			margin: 10% auto;
-			display: block;
-		}
-
-		#start button {
-			width: 70%;
-			margin: 0 auto 7%;
-			display: block;
-			font-size: 1.75em;
-			padding: .1em .15em;
-			border-radius: .4em;
-			border: .1em solid #FFF;
-			background: transparent;
-			color: #FAFAFA;
-			cursor: pointer;
-		}
-
-		#start form button {
-			font-size: 1em;
-			border-width: .116666em;
-		}
-
-		#start form button:after {
-			content: "Add Score";
-		}
-
-		#start form button:disabled {
-			background: #606060;
-			cursor: default;
-		}
-
-		#start form button:disabled:after {
-			content: "Sending Score...";
-		}
-
-		#pw {
-			font-size: 1em;
-			border: 0;
-			border-radius: .25em;
-			padding: .323333em .116666em;
-			width: calc(70% - .223333em);
-			display: block;
-			margin: 0 auto .5em;
-		}
-
-		#not_playing {
-			height: 100%;
-		}
-
-		#not_playing > div {
-			flex-basis: 50%;
-		}
-
-		#layout_outer {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-		}
-
-		#right_container, #under_container {
-			color: #FFF;
-			text-align: center;
-			font-size: 1.35em;
-		}
-
-		#under_fill {
-			flex-direction: column;
-			justify-content: space-around;
-		}
-
-		#under_container {
-			margin: auto;
-			display: flex;
-			flex-wrap: wrap;
-			flex-direction: row-reverse;
-			justify-content: space-around;
-			overflow-y: auto;
-		}
-
-		#u_preview_container {
-			margin: auto;
-		}
-
-		#r_score, #r_level, #r_lines, #r_preview_container {
-			margin-bottom: .75em;
-		}
-
-		#r_score, #r_level, #r_lines {
-			line-height: 1.05;
-		}
-
-		#r_score span, #r_level span, #r_lines span {
-			font-size: .75em;
-			vertical-align: top;
-		}
-
-		#u_left, #u_right {
-			min-width: 8em;
-		}
-
-		#u_left {
-			display: flex;
-			flex-direction: column;
-			justify-content: space-around;
-			justify-content: space-evenly;
-		}
-
-		#r_preview, #u_preview {
-			width: 80%;
-			margin: auto;
-			display: grid;
-			grid-template: repeat(2, 1fr) / repeat(4, 1fr);
-		}
-
-		#r_preview:before, #u_preview:before {
-			content: " ";
-			display: block;
-			width: 100%;
-			padding-top: 100%;
-			grid-area: 1 / 1 / 2 / 2;
-		}
-
-		#r_btns,
-		#u_btns {
-			display: flex;
-			justify-content: space-around;
-			justify-content: space-evenly;
-			flex-wrap: wrap;
-		}
-
-		#r_btns button,
-		#u_btns button {
-			background: transparent;
-			border: .1em solid #FFF;
-			color: #FFF;
-			border-radius: .25em;
-			padding: 0 .3em;
-			cursor: pointer;
-			font-size: 1em;
-		}
-
-		#r_btns button:hover, #r_btns button:focus,
-		#u_btns button:hover, #u_btns button:focus,
-		#start button:hover, #start button:focus {
-			background: #606060;
-		}
-
-		#grid_container {
-			display: flex;
-			height: 100%;
-			width: 100%;
-			flex-direction: column;
-			justify-content: space-around;
-			position: relative;
-		}
-
-		#grid, #locked, #board, #ghost, #pause_screen {
-			display: grid;
-			grid-template-rows: repeat(18, 1fr);
-			grid-template-columns: repeat(10, 1fr);
-			width: 100%;
-			position: absolute;
-			grid-gap: 1px;
-			gap: 1px;
-		}
-
-		#ghost {
-			opacity: .5;
-		}
-
-		#high_scores {
-			display: grid;
-			grid-template-columns: 1fr;
-			grid-template-rows: repeat(10, 1fr);
-			grid-gap: .3em;
-			gap: .3em;
-			padding: .3em .3em 0;
-			overflow-y: auto;
-		}
-
-		#high_scores > div:not(#scores_msg) {
-			background: #606060;
-			border-radius: .4em;
-			display: flex;
-			padding: 0 1em;
-			align-items: center;
-			justify-content: space-between;
-		}
-
-		#high_scores > div:last-child {
-			margin-bottom: .3em;
-		}
-
-		#high_scores > div:not(#scores_msg) > div {
-			height: 3.5em;
-			width: 3.5em;
-			background-repeat: no-repeat;
-			background-size: 85%;
-			background-position: center;
-			border-radius: 50%;
-			margin: .2em 0;
-			background-color: #505050;
-		}
-
-		#high_scores > div.score_p > div {
-			background-image: url(/svg/p+.svg);
-		}
-
-		#high_scores > div.score_p:nth-child(2) > div {
-			background-image: url(/svg/p1.svg);
-		}
-
-		#high_scores > div.score_p:nth-child(3) > div {
-			background-image: url(/svg/p2.svg);
-		}
-
-		#high_scores > div.score_p:nth-child(4) > div {
-			background-image: url(/svg/p3.svg);
-		}
-
-		#high_scores > div.score_s > div {
-			background-image: url(/svg/s+.svg);
-		}
-
-		#high_scores > div.score_s:nth-child(2) > div {
-			background-image: url(/svg/s1.svg);
-		}
-
-		#high_scores > div.score_s:nth-child(3) > div {
-			background-image: url(/svg/s2.svg);
-		}
-
-		#high_scores > div.score_s:nth-child(4) > div {
-			background-image: url(/svg/s3.svg);
-		}
-
-		#high_scores > div.score_d > div {
-			background-image: url(/svg/d+.svg);
-			position: relative;
-		}
-
-		#high_scores > div.score_d:nth-child(2) > div {
-			background-image: url(/svg/d1.svg);
-		}
-
-		#high_scores > div.score_d:nth-child(3) > div {
-			background-image: url(/svg/d2.svg);
-		}
-
-		#high_scores > div.score_d:nth-child(4) > div {
-			background-image: url(/svg/d3.svg);
-		}
-
-		#high_scores > div.score_d > div:after {
-			content: " ";
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background-image: url(/svg/psalternate.disconnected.svg);
-		}
-
-		#high_scores > div:not(#scores_msg) > span {
-			font-size: 2.25em;
-			color: #FFF;
-		}
-
-		body:not(.game_paused) #pause_screen {
-			display: none;
-		}
-
-		#pause_screen {
-			background: #424242;
-			box-shadow: 0 0 0 3px #424242;
-		}
-
-		#paused_logo #play_btn {
-			background-color: #606060;
-			background-image: url(/svg/tetris/play.svg);
-			cursor: pointer;
-			border: 0;
-		}
-
-		#paused_logo #play_btn:hover,
-		#paused_logo #play_btn:focus {
-			background-color: #00acc1;
-		}
-
-		#grid_height, #grid {
-			position: relative;
-		}
-
-		#locked {
-			grid-template-columns: 1fr;
-		}
-
-		#locked > div {
-			display: grid;
-			grid-template-rows: 1fr;
-			grid-template-columns: repeat(10, 1fr);
-			width: 100%;
-			grid-gap: 1px;
-			gap: 1px;
-		}
-
-		#locked, #board, #ghost, #pause_screen {
-			height: 100%;
-			top: 0;
-		}
-
-		#paused_logo {
-			display: grid;
-		    grid-template-columns: repeat(15, 1fr);
-		    grid-template-rows: repeat(6, 1fr);
-		    grid-gap: 5px;
-		    gap: 5px;
-		    border: 3px solid transparent;
-		    border-width: 3px 0;
-			grid-area: 8 / 1 / 12 / 11;
-		}
-
-		#paused_logo > div {
-			background: #9E9E9E;
-		}
-
-		.game_piece {
-			display: grid;
-			grid-gap: 1px;
-			gap: 1px;
-		}
-
-		#right_fill {
-			display: flex;
-			flex-direction: column;
-			justify-content: space-around;
-		}
-
-		.game_msg {
-			position: absolute;
-			color: #FFF;
-			width: 100%;
-			text-align: center;
-			font-size: 2em;
-			animation: fadeup 3.0s cubic-bezier(0.75, 0, 0.75, 0);
-			line-height: 1;
-		}
-
-		#start_btn:after {
-			content: "Start";
-		}
-
-		#restart #start_btn:after {
-			content: "Play Again";
-		}
-
-		#u_pause:after, #r_pause:after {
-			content: "Pause";
-		}
-
-		.game_paused #u_pause:after, .game_paused #r_pause:after {
-			content: "Play";
-		}
-
-		body:not(.scores_err) #scores_msg {
-			display: none;
-		}
-
-		#high_scores div#temp_score {
-			animation: new_score 0.4s linear infinite alternate;
-		}
-
-		#high_scores div#old_score {
-			animation: old_score 0.4s linear infinite alternate;
-		}
-
-		#scores_msg {
-			color: #FFF;
-			text-align: center;
-			font-size: 1.75em;
-			padding: .5em 0 .3em;
-			line-height: 1.1;
-		}
-
-		#scores_msg button {
-			display: block;
-			margin: auto;
-			padding: .1em .15em;
-			color: #FAFAFA;
-			border: .1em solid #FFF;
-			font-size: inherit;
-			border-radius: .25em;
-			width: 70%;
-			background: #424242;
-			cursor: pointer;
-		}
-
-		#scores_msg button:hover, #scores_msg button:focus {
-			background: #606060;
-		}
-
-		@keyframes fadeup {
-			0% {
-				opacity: 1;
-				top: 3em;
-			}
-
-			50% {
-				opacity: 1;
-			}
-
-			100% {
-				opacity: 0;
-				top: 1em;
-			}
-		}
-
-		@keyframes new_score {
-			0% {
-				background-color: #606060;
-			}
-
-			100% {
-				background-color: #a0a0a0;
-			}
-		}
-
-		@keyframes old_score {
-			0% {
-				background-color: #424242;
-			}
-
-			100% {
-				background-color: #606060;
-			}
-		}
-
-		@media (min-aspect-ratio: 20/18) {
-			#left_fill, #right_fill {
-				display: flex;
-				flex-grow: 1;
-			}
-
-			#under_fill {
-				display: none;
-			}
-
-			#grid_height, #grid, #locked, #board, #ghost, #pause_screen {
-				height: 100%;
-			}
-		}
-
-		@media (min-aspect-ratio: 15/18) and (max-aspect-ratio: 20/18) {
-			#right_fill {
-				display: flex;
-				flex-grow: 1;
-			}
-
-			#left_fill {
-				display: flex;
-			}
-
-			#under_fill {
-				display: none;
-			}
-
-			#grid, #locked, #board, #ghost, #pause_screen, #grid_height {
-				height: 100%;
-			}
-		}
-
-		@media (min-aspect-ratio: 15/23) and (max-aspect-ratio: 15/18) {
-			#right_fill {
-				display: flex;
-				flex-basis: 33.3333%;
-			}
-
-			#left_fill, #under_fill {
-				display: none;
-			}
-
-			#grid_container {
-				flex-basis: 66.6667%;
-			}
-
-			#grid div {
-				padding-top: 100%;
-			}
-		}
-
-		@media (max-aspect-ratio: 15/23) {
-			#left_fill, #right_fill, #under_fill {
-				display: flex;
-			}
-
-			#grid, #board, #ghost, #pause_screen, #grid_height {
-				height: 100%;
-			}
-
-			#layout {
-				flex-basis: 78.2609%;
-				max-height: 180vw;
-				flex-shrink: 0;
-			}
-
-			#under_fill {
-				flex-basis: 21.7391%;
-				max-height: 21.7391%;
-				flex-shrink: 1;
-			}
-
-			#right_fill div {
-				display: none;
-			}
-		}
-
-		@media (max-aspect-ratio: 2/1) {
-			body:not(.playing) #not_playing {
-				display: block;
-			}
-		}
-
-		#grid div,
-		#locked div div,
-		#pause_screen div,
-		.game_piece div {
-			position: relative;
-		}
-
-		#grid div:after,
-		#locked div div:after,
-		#pause_screen > div:not(#paused_logo):after,
-		.game_piece div:after {
-			content: " ";
-			position: absolute;
-			height: 140%;
-			width: 140%;
-			top: -20%;
-			left: -20%;
-			pointer-events: none;
-		}
-
-		#grid div:after,
-		#pause_screen > div:not(#paused_logo):after {
-			background-image: url(/svg/tetris/tetrimino/empty.svg);
-		}
-
-		#locked .gp_type_I,
-		.gp_type_I div,
-		#locked .gp_type_O,
-		.gp_type_O div,
-		#locked .gp_type_S,
-		.gp_type_S.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(6)),
-		.gp_type_S.gp_rot_180 div:not(:nth-child(1)):not(:nth-child(6)),
-		.gp_type_S.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(5)),
-		.gp_type_S.gp_rot_270 div:not(:nth-child(2)):not(:nth-child(5)),
-		#locked .gp_type_Z,
-		.gp_type_Z.gp_rot_0 div:not(:nth-child(3)):not(:nth-child(4)),
-		.gp_type_Z.gp_rot_180 div:not(:nth-child(3)):not(:nth-child(4)),
-		.gp_type_Z.gp_rot_90 div:not(:nth-child(1)):not(:nth-child(6)),
-		.gp_type_Z.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(6)),
-		#locked .gp_type_L,
-		.gp_type_L.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(2)),
-		.gp_type_L.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(4)),
-		.gp_type_L.gp_rot_180 div:not(:nth-child(5)):not(:nth-child(6)),
-		.gp_type_L.gp_rot_270 div:not(:nth-child(3)):not(:nth-child(5)),
-		#locked .gp_type_J,
-		.gp_type_J.gp_rot_0 div:not(:nth-child(2)):not(:nth-child(3)),
-		.gp_type_J.gp_rot_90 div:not(:nth-child(4)):not(:nth-child(6)),
-		.gp_type_J.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(5)),
-		.gp_type_J.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(3)),
-		#locked .gp_type_T,
-		.gp_type_T.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(3)),
-		.gp_type_T.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(6)),
-		.gp_type_T.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(6)),
-		.gp_type_T.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(5)) {
-			background: #424242;
-		}
-
-		#locked .gp_type_I:after,
-		.gp_type_I div:after {
-			background-image: url(/svg/tetris/tetrimino/I.svg);
-		}
-
-		#locked .gp_type_O:after,
-		.gp_type_O div:after {
-			background-image: url(/svg/tetris/tetrimino/O.svg);
-		}
-
-		#locked .gp_type_S:after,
-		.gp_type_S.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_S.gp_rot_180 div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_S.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(5)):after,
-		.gp_type_S.gp_rot_270 div:not(:nth-child(2)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/S.svg);
-		}
-
-		#locked .gp_type_Z:after,
-		.gp_type_Z.gp_rot_0 div:not(:nth-child(3)):not(:nth-child(4)):after,
-		.gp_type_Z.gp_rot_180 div:not(:nth-child(3)):not(:nth-child(4)):after,
-		.gp_type_Z.gp_rot_90 div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_Z.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(6)):after {
-			background-image: url(/svg/tetris/tetrimino/Z.svg);
-		}
-
-		#locked .gp_type_L:after,
-		.gp_type_L.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(2)):after,
-		.gp_type_L.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(4)):after,
-		.gp_type_L.gp_rot_180 div:not(:nth-child(5)):not(:nth-child(6)):after,
-		.gp_type_L.gp_rot_270 div:not(:nth-child(3)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/L.svg);
-		}
-
-		#locked .gp_type_J:after,
-		.gp_type_J.gp_rot_0 div:not(:nth-child(2)):not(:nth-child(3)):after,
-		.gp_type_J.gp_rot_90 div:not(:nth-child(4)):not(:nth-child(6)):after,
-		.gp_type_J.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(5)):after,
-		.gp_type_J.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(3)):after {
-			background-image: url(/svg/tetris/tetrimino/J.svg);
-		}
-
-		#locked .gp_type_T:after,
-		.gp_type_T.gp_rot_0 div:not(:nth-child(1)):not(:nth-child(3)):after,
-		.gp_type_T.gp_rot_90 div:not(:nth-child(2)):not(:nth-child(6)):after,
-		.gp_type_T.gp_rot_180 div:not(:nth-child(4)):not(:nth-child(6)):after,
-		.gp_type_T.gp_rot_270 div:not(:nth-child(1)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/T.svg);
-		}
-
-		.gp_type_I.flashing div:after {
-			background-image: url(/svg/tetris/tetrimino/I.flash.svg);
-		}
-
-		.gp_type_O.flashing div:after {
-			background-image: url(/svg/tetris/tetrimino/O.flash.svg);
-		}
-
-		.gp_type_S.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_S.gp_rot_180.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_S.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(5)):after,
-		.gp_type_S.gp_rot_270.flashing div:not(:nth-child(2)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/S.flash.svg);
-		}
-
-		.gp_type_Z.gp_rot_0.flashing div:not(:nth-child(3)):not(:nth-child(4)):after,
-		.gp_type_Z.gp_rot_180.flashing div:not(:nth-child(3)):not(:nth-child(4)):after,
-		.gp_type_Z.gp_rot_90.flashing div:not(:nth-child(1)):not(:nth-child(6)):after,
-		.gp_type_Z.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(6)):after {
-			background-image: url(/svg/tetris/tetrimino/Z.flash.svg);
-		}
-
-		.gp_type_L.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(2)):after,
-		.gp_type_L.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(4)):after,
-		.gp_type_L.gp_rot_180.flashing div:not(:nth-child(5)):not(:nth-child(6)):after,
-		.gp_type_L.gp_rot_270.flashing div:not(:nth-child(3)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/L.flash.svg);
-		}
-
-		.gp_type_J.gp_rot_0.flashing div:not(:nth-child(2)):not(:nth-child(3)):after,
-		.gp_type_J.gp_rot_90.flashing div:not(:nth-child(4)):not(:nth-child(6)):after,
-		.gp_type_J.gp_rot_180.flashing div:not(:nth-child(4)):not(:nth-child(5)):after,
-		.gp_type_J.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(3)):after {
-			background-image: url(/svg/tetris/tetrimino/J.flash.svg);
-		}
-
-		.gp_type_T.gp_rot_0.flashing div:not(:nth-child(1)):not(:nth-child(3)):after,
-		.gp_type_T.gp_rot_90.flashing div:not(:nth-child(2)):not(:nth-child(6)):after,
-		.gp_type_T.gp_rot_180.flashing div:not(:nth-child(4)):not(:nth-child(6)):after,
-		.gp_type_T.gp_rot_270.flashing div:not(:nth-child(1)):not(:nth-child(5)):after {
-			background-image: url(/svg/tetris/tetrimino/T.flash.svg);
-		}
-
-		#locked .flashing .gp_type_I:after {
-			background-image: url(/svg/tetris/tetrimino/I.flash.svg);
-		}
-
-		#locked .flashing .gp_type_O:after {
-			background-image: url(/svg/tetris/tetrimino/O.flash.svg);
-		}
-
-		#locked .flashing .gp_type_S:after {
-			background-image: url(/svg/tetris/tetrimino/S.flash.svg);
-		}
-
-		#locked .flashing .gp_type_Z:after {
-			background-image: url(/svg/tetris/tetrimino/Z.flash.svg);
-		}
-
-		#locked .flashing .gp_type_L:after {
-			background-image: url(/svg/tetris/tetrimino/L.flash.svg);
-		}
-
-		#locked .flashing .gp_type_J:after {
-			background-image: url(/svg/tetris/tetrimino/J.flash.svg);
-		}
-
-		#locked .flashing .gp_type_T:after {
-			background-image: url(/svg/tetris/tetrimino/T.flash.svg);
-		}
-	</style>
-</head>
-<body>
-	<div id="layout_outer">
-		<div id="layout">
-			<div id="left_fill"></div>
-			<div id="grid_container">
-				<div id="grid_height">
-					<div id="grid">
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						</div>
-					<div id="ghost"></div>
-					<div id="board"></div>
-					<div id="locked">
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
+---
+title: Tetris
+layout: default
+styles:
+  - tetris/index.css
+  - tetris/tetromino.css
+scripts:
+  - tetris/resizer.js:
+      afterbody: true
+  - tetris/touch.js:
+      defer: true
+      async: true
+  - tetris/keys.js:
+      defer: true
+      async: true
+  - tetris/game.js:
+      defer: true
+      async: true
+  - tetris/index.js:
+      afterbody: true
+fonts:
+  - Baloo
+authrequired: true
+---
+<div id="layout_outer">
+	<div id="layout">
+		<div id="left_fill"></div>
+		<div id="grid_container">
+			<div id="grid_height">
+				<div id="grid">
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
 					</div>
-					<div id="pause_screen">
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div id="paused_logo">
-							<div style="grid-area:1/1/2/5;border-radius:calc(34%/4)/34%"></div>
-							<div style="grid-area:1/1/7/2;border-radius:34%/calc(34%/6)"></div>
-							<div style="grid-area:3/1/4/5;border-radius:calc(34%/4)/34%"></div>
-							<div style="grid-area:1/4/4/5;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:4/2/5/5;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:5/2/6/5;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:6/2/7/5;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:4/4/7/5;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:5/2/7/3;border-radius:34%/calc(34%/2)"></div>
-							<div style="grid-area:4/5/7/6;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:4/6/7/7;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:6/5/7/7;border-radius:calc(34%/2)/34%"></div>
-							<div style="grid-area:4/7/6/8;border-radius:34%/calc(34%/2)"></div>
-							<div style="grid-area:5/9/7/10;border-radius:34%/calc(34%/2)"></div>
-							<div style="grid-area:4/7/5/10;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:5/7/6/10;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:6/7/7/10;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:4/10/5/13;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:5/10/6/13;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:6/10/7/13;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:4/10/7/11;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:4/12/6/13;border-radius:34%/calc(34%/2)"></div>
-							<div style="grid-area:4/13/7/14;border-radius:34%/calc(34%/3)"></div>
-							<div style="grid-area:1/15/7/16;border-radius:34%/calc(34%/6)"></div>
-							<div style="grid-area:4/13/5/16;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:6/13/7/16;border-radius:calc(34%/3)/34%"></div>
-							<div style="grid-area:2/2/3/4;border-radius:calc(34%/2)/34%;background:#606060"></div>
-							<div style="grid-area:1/5/2/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
-							<div style="grid-area:3/5/4/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
-							<div style="grid-area:2/5/3/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
-							<div style="grid-area:1/10/2/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
-							<div style="grid-area:3/10/4/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
-							<div style="grid-area:2/10/3/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
-							<div style="grid-area:5/14/6/15;border-radius:calc(34%/1)/34%;background:#606060"></div>
-							<button id="play_btn" style="grid-area:1/7/4/10;border-radius:calc(34%/3)/calc(34%/3)"></button>
-						</div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-						<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-					</div>
+				<div id="ghost"></div>
+				<div id="board"></div>
+				<div id="locked">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
 				</div>
-			</div>
-			<div id="right_fill">
-				<div id="right_container">
-					<div id="r_score">
-						<div id="r_score_num"></div>
-						<span>Score</span>
+				<div id="pause_screen">
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div id="paused_logo">
+						<div style="grid-area:1/1/2/5;border-radius:calc(34%/4)/34%"></div>
+						<div style="grid-area:1/1/7/2;border-radius:34%/calc(34%/6)"></div>
+						<div style="grid-area:3/1/4/5;border-radius:calc(34%/4)/34%"></div>
+						<div style="grid-area:1/4/4/5;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:4/2/5/5;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:5/2/6/5;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:6/2/7/5;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:4/4/7/5;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:5/2/7/3;border-radius:34%/calc(34%/2)"></div>
+						<div style="grid-area:4/5/7/6;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:4/6/7/7;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:6/5/7/7;border-radius:calc(34%/2)/34%"></div>
+						<div style="grid-area:4/7/6/8;border-radius:34%/calc(34%/2)"></div>
+						<div style="grid-area:5/9/7/10;border-radius:34%/calc(34%/2)"></div>
+						<div style="grid-area:4/7/5/10;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:5/7/6/10;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:6/7/7/10;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:4/10/5/13;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:5/10/6/13;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:6/10/7/13;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:4/10/7/11;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:4/12/6/13;border-radius:34%/calc(34%/2)"></div>
+						<div style="grid-area:4/13/7/14;border-radius:34%/calc(34%/3)"></div>
+						<div style="grid-area:1/15/7/16;border-radius:34%/calc(34%/6)"></div>
+						<div style="grid-area:4/13/5/16;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:6/13/7/16;border-radius:calc(34%/3)/34%"></div>
+						<div style="grid-area:2/2/3/4;border-radius:calc(34%/2)/34%;background:#606060"></div>
+						<div style="grid-area:1/5/2/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
+						<div style="grid-area:3/5/4/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
+						<div style="grid-area:2/5/3/7;border-radius:calc(34%/2)/34%;background:#606060"></div>
+						<div style="grid-area:1/10/2/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
+						<div style="grid-area:3/10/4/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
+						<div style="grid-area:2/10/3/15;border-radius:calc(34%/5)/34%;background:#606060"></div>
+						<div style="grid-area:5/14/6/15;border-radius:calc(34%/1)/34%;background:#606060"></div>
+						<button id="play_btn" style="grid-area:1/7/4/10;border-radius:calc(34%/3)/calc(34%/3)"></button>
 					</div>
-					<div id="r_level">
-						<div id="r_level_num"></div>
-						<span>Level</span>
-					</div>
-					<div id="r_lines">
-						<div id="r_lines_num"></div>
-						<span>Lines</span>
-					</div>
-					<div id="r_preview_container">
-						<div id="r_preview"></div>
-					</div>
-					<div id="r_btns">
-						<button id="r_end">End</button>
-						<button id="r_pause"></button>
-					</div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
 				</div>
 			</div>
 		</div>
-		<div id="under_fill">
-			<div id="under_container">
-				<div id="u_right">
-					<div id="u_preview_container">
-						<div id="u_preview_padder">
-							<div id="u_preview"></div>
-						</div>
-					</div>
-					<div id="u_btns">
-						<button id="u_end">End</button>
-						<button id="u_pause"></button>
-					</div>
+		<div id="right_fill">
+			<div id="right_container">
+				<div id="r_score">
+					<div id="r_score_num"></div>
+					<span>Score</span>
 				</div>
-				<div id="u_left">
-					<div id="u_score"></div>
-					<div id="u_level"></div>
-					<div id="u_lines"></div>
+				<div id="r_level">
+					<div id="r_level_num"></div>
+					<span>Level</span>
+				</div>
+				<div id="r_lines">
+					<div id="r_lines_num"></div>
+					<span>Lines</span>
+				</div>
+				<div id="r_preview_container">
+					<div id="r_preview"></div>
+				</div>
+				<div id="r_btns">
+					<button id="r_end">End</button>
+					<button id="r_pause"></button>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div id="not_playing">
-		<div id="start">
-			<img src="/svg/tetris/TETRIS.svg">
-			<button id="start_btn" autofocus></button>
-		</div>
-		<div id="restart">
-			<div id="new_score_1">You got a new high score!</div>
-			<div id="fin_score"></div>
-			<div id="new_score_2">
-				<div>Re-enter your password to add it to the high scores list.</div>
-				<form id="add_score">
-					<input type="password" id="pw">
-					<button id="pw_submit"></button>
-				</form>
-			</div>
-			<div id="new_score_3">
-				<span>...but it doesn't look like you're connected to the Internet. Reconnect to add your score to the high scores list.</span>
-				<button id="retry_scores">Try Again</button>
-			</div>
-			<h1>Statistics</h1>
-			<div class="statrow">
-				<div class="statcell">
-					<div id="fin_level"></div>
-					<div>Level Reached</div>
+	<div id="under_fill">
+		<div id="under_container">
+			<div id="u_right">
+				<div id="u_preview_container">
+					<div id="u_preview_padder">
+						<div id="u_preview"></div>
+					</div>
 				</div>
-				<div class="statcell">
-					<div id="fin_lines"></div>
-					<div>Lines Cleared</div>
+				<div id="u_btns">
+					<button id="u_end">End</button>
+					<button id="u_pause"></button>
 				</div>
 			</div>
-			<div id="stat_row_line_number" class="statrow">
-				<div class="statcell">
-					<div id="fin_line_1"></div>
-					<div>Singles</div>
-				</div>
-				<div class="statcell">
-					<div id="fin_line_2"></div>
-					<div>Doubles</div>
-				</div>
-				<div class="statcell">
-					<div id="fin_line_3"></div>
-					<div>Triples</div>
-				</div>
-				<div class="statcell">
-					<div id="fin_line_4"></div>
-					<div>Tetrises</div>
-				</div>
+			<div id="u_left">
+				<div id="u_score"></div>
+				<div id="u_level"></div>
+				<div id="u_lines"></div>
 			</div>
-			<div id="stat_row_line_piece" class="statrow">
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/S.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/S.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/S.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/S.svg)"></div>
-						<div></div>
-					</div>
-					<div id="fin_line_S"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
-						<div style="background-image:url(/svg/tetris/tetrimino/Z.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/Z.svg)"></div>
-						<div></div>
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/Z.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/Z.svg)"></div>
-					</div>
-					<div id="fin_line_Z"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
-						<div></div>
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/L.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/L.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/L.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/L.svg)"></div>
-					</div>
-					<div id="fin_line_L"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
-						<div style="background-image:url(/svg/tetris/tetrimino/J.svg)"></div>
-						<div></div>
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/J.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/J.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/J.svg)"></div>
-					</div>
-					<div id="fin_line_J"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/T.svg)"></div>
-						<div></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/T.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/T.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/T.svg)"></div>
-					</div>
-					<div id="fin_line_T"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr;width:2.8em">
-						<div style="background-image:url(/svg/tetris/tetrimino/O.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/O.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/O.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/O.svg)"></div>
-					</div>
-					<div id="fin_line_O"></div>
-				</div>
-				<div class="statcell">
-					<div class="statcellpiecegrid" style="grid-template:1fr/1fr 1fr 1fr 1fr;border:0 solid transparent;border-width:.7em 0;height:1.4em;width:5.6em">
-						<div style="background-image:url(/svg/tetris/tetrimino/I.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/I.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/I.svg)"></div>
-						<div style="background-image:url(/svg/tetris/tetrimino/I.svg)"></div>
-					</div>
-					<div id="fin_line_I"></div>
-				</div>
-			</div>
-			<div class="statrow">
-				<div class="statcell">
-					<div id="fin_tSpin_reg"></div>
-					<div>T-Spins</div>
-				</div>
-				<div class="statcell">
-					<div id="fin_tSpin_mini"></div>
-					<div>T-Spin Minis</div>
-				</div>
-			</div>
-		</div>
-		<div id="high_scores">
-			<div id="scores_msg"><span></span></div>
-			<div class="score_d"><div style="background-image:url(/svg/d1.svg)"></div><span>--- ---</span></div>
-			<div class="score_d"><div style="background-image:url(/svg/d2.svg)"></div><span>--- ---</span></div>
-			<div class="score_d"><div style="background-image:url(/svg/d3.svg)"></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
-			<div class="score_d"><div></div><span>--- ---</span></div>
 		</div>
 	</div>
-	<script src="/js/tetris/resizer.js"></script>
-	<script defer async src="/js/tetris/touch.js"></script>
-	<script defer async src="/js/tetris/keys.js"></script>
-	<script defer async src="/js/tetris/game.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/6.0.1/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/6.0.1/firebase-firestore.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/6.0.1/firebase-auth.js"></script>
-	<script src="/js/auth.js"></script>
-	<script type="text/javascript">
-		!function() {
-			var pwSubmit = document.getElementById("pw_submit");
-			var newScoreSpan = document.getElementById("new_score_2").firstElementChild;
-
-			if (window.firebase) {
-				auth.handleInit(function(user) {
-					if (!user) location.replace("/login.html?return=" + encodeURIComponent(location.pathname));
-				});
-				var db = firebase.firestore();
-				db.collection("tetris").doc("scores").onSnapshot(dataUpdate);
-
-				function dataUpdate(doc) {
-					if (doc.metadata.fromCache && !doc.exists) {
-						document.body.classList.add("no_scores");
-						document.body.classList.add("scores_err");
-						document.getElementById("scores_msg").firstElementChild.innerText = "Connect to the Internet to see scores.";
-						return;
-					} else {
-						document.body.classList.remove("no_scores");
-						document.body.classList.remove("scores_err");
-					}
-
-					var data = doc.data();
-					var scores = data.p.map(function(score) {
-						return {
-							owner: "p",
-							value: score
-						};
-					}).concat(data.s.map(function(score) {
-						return {
-							owner: "s",
-							value: score
-						}
-					})).sort(function(a, b) {
-						return b.value - a.value;
-					});
-					window.game = window.game || {updateScores: function() {}};
-					game.scores = scores;
-					game.updateScores();
-				}
-			} else {
-				//location.replace("/login.html?return=" + encodeURIComponent(location.pathname));
-			}
-
-			document.getElementById("add_score").addEventListener("submit", function(e) {
-				e.preventDefault();
-
-				if (pwSubmit.disabled) return;
-
-				pwSubmit.disabled = true;
-
-				auth.reauth(document.getElementById("pw").value).then(function() {
-					var obj = {p: [], s: []};
-					for (var i = 0, l = game.scores.length; i < l; i++) {
-						obj[game.scores[i].owner].push(game.scores[i].value);
-					}
-					obj[auth.userID] = obj[auth.userID].sort(function(a, b) {
-						return b - a;
-					});
-					obj[auth.userID].pop();
-					obj[auth.userID].push(+document.body.getAttribute("data-score"));
-					obj[auth.userID] = obj[auth.userID].sort(function(a, b) {
-						return b - a;
-					});
-					firebase.firestore().collection("tetris").doc("scores").update({
-						[auth.userID]: obj[auth.userID]
-					}).then(function() {
-						document.body.classList.remove("new_score");
-						document.body.removeAttribute("data-score");
-						pwSubmit.disabled = false;
-						game.updateScores();
-					}).catch(function() {
-						newScoreSpan.innerText = "There was a problem connecting to the Internet. Check your connection and try again.";
-						pwSubmit.disabled = false;
-					});
-				}).catch(function(e) {
-					if (e.code == "auth/wrong-password") {
-						newScoreSpan.innerText = "The password you entered is incorrect. Enter the correct password and try again.";
-					} else if (e.code == "auth/network-request-failed") {
-						newScoreSpan.innerText = "There was a problem connecting to the Internet. Check your connection and try again.";
-					}
-					pwSubmit.disabled = false;
-				});
-			})
-		}();
-	</script>
-</body>
-</html>
+</div>
+<div id="not_playing">
+	<div id="start">
+		<img src="/svg/tetris/TETRIS.svg">
+		<button id="start_btn" autofocus>Start</button>
+	</div>
+	<div id="restart">
+		<div id="new_score_1">You got a new high score!</div>
+		<div id="fin_score"></div>
+		<div id="new_score_2">
+			<div>Re-enter your password to add it to the high scores list.</div>
+			<form id="add_score">
+				<input type="password" id="pw">
+				<button id="pw_submit">Add Score</button>
+			</form>
+		</div>
+		<div id="new_score_3">
+			<span>But you're not connected to the Internet. Reconnect to add your score to the list.</span>
+			<button id="retry_scores">Try Again</button>
+		</div>
+		<h1>Statistics</h1>
+		<div class="statrow">
+			<div class="statcell">
+				<div id="fin_level"></div>
+				<div>Level Reached</div>
+			</div>
+			<div class="statcell">
+				<div id="fin_lines"></div>
+				<div>Lines Cleared</div>
+			</div>
+		</div>
+		<div id="stat_row_line_number" class="statrow">
+			<div class="statcell">
+				<div id="fin_line_1"></div>
+				<div>Singles</div>
+			</div>
+			<div class="statcell">
+				<div id="fin_line_2"></div>
+				<div>Doubles</div>
+			</div>
+			<div class="statcell">
+				<div id="fin_line_3"></div>
+				<div>Triples</div>
+			</div>
+			<div class="statcell">
+				<div id="fin_line_4"></div>
+				<div>Tetrises</div>
+			</div>
+		</div>
+		<div id="stat_row_line_piece" class="statrow">
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/S.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/S.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/S.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/S.svg)"></div>
+					<div></div>
+				</div>
+				<div id="fin_line_S"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
+					<div style="background-image:url(/svg/tetris/tetromino/Z.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/Z.svg)"></div>
+					<div></div>
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/Z.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/Z.svg)"></div>
+				</div>
+				<div id="fin_line_Z"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
+					<div></div>
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/L.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/L.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/L.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/L.svg)"></div>
+				</div>
+				<div id="fin_line_L"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
+					<div style="background-image:url(/svg/tetris/tetromino/J.svg)"></div>
+					<div></div>
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/J.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/J.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/J.svg)"></div>
+				</div>
+				<div id="fin_line_J"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr 1fr">
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/T.svg)"></div>
+					<div></div>
+					<div style="background-image:url(/svg/tetris/tetromino/T.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/T.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/T.svg)"></div>
+				</div>
+				<div id="fin_line_T"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr 1fr/1fr 1fr;width:2.8em">
+					<div style="background-image:url(/svg/tetris/tetromino/O.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/O.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/O.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/O.svg)"></div>
+				</div>
+				<div id="fin_line_O"></div>
+			</div>
+			<div class="statcell">
+				<div class="statcellpiecegrid" style="grid-template:1fr/1fr 1fr 1fr 1fr;border:0 solid transparent;border-width:.7em 0;height:1.4em;width:5.6em">
+					<div style="background-image:url(/svg/tetris/tetromino/I.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/I.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/I.svg)"></div>
+					<div style="background-image:url(/svg/tetris/tetromino/I.svg)"></div>
+				</div>
+				<div id="fin_line_I"></div>
+			</div>
+		</div>
+		<div class="statrow">
+			<div class="statcell">
+				<div id="fin_tSpin_reg"></div>
+				<div>T-Spins</div>
+			</div>
+			<div class="statcell">
+				<div id="fin_tSpin_mini"></div>
+				<div>T-Spin Minis</div>
+			</div>
+		</div>
+	</div>
+	<div id="high_scores">
+		<div id="scores_msg"><span></span></div>
+		<div class="score_d"><div style="background-image:url(/svg/d1.svg)"></div><span>--- ---</span></div>
+		<div class="score_d"><div style="background-image:url(/svg/d2.svg)"></div><span>--- ---</span></div>
+		<div class="score_d"><div style="background-image:url(/svg/d3.svg)"></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+		<div class="score_d"><div></div><span>--- ---</span></div>
+	</div>
+</div>
