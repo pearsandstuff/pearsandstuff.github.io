@@ -28,9 +28,9 @@ function uncache(cb) {
 }
 
 // Build will transpile and minify files for production.
-exports.build = series(uncache, build);
+exports.build = build;
 // Move will just move files directly for easier debugging.
-exports.move = series(uncache, move)
+exports.move = series(uncache, move);
 
 exports.default = function() {
 	exports.move();

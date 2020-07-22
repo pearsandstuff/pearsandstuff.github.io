@@ -21,11 +21,6 @@ body {
 	}
 }
 
-button:not(#play_btn):not(#start_btn):not(#r_end):not(#r_pause):not(#u_end):not(#u_pause):not(#pw_submit) {
-	color: $color-text-button;
-	font-family: $Baloo;
-}
-
 #layout,
 #layout_outer {
 	height: 100%;
@@ -65,9 +60,13 @@ body.playing #layout_outer {
 }
 
 body.new_score #new_score_1,
-body.new_score:not(.scores_err) #new_score_2,
+body.new_score.sending_score #new_score_2,
 body.new_score.scores_err #new_score_3 {
 	display: block;
+}
+
+#warning {
+	color: transparentize(goldenrod, 0.2);
 }
 
 #start {
@@ -333,101 +332,71 @@ body.new_score #fin_score {
 }
 
 #high_scores {
-	display: grid;
-	grid-template-columns: 1fr;
-	grid-template-rows: repeat(10, 1fr);
-	grid-gap: .3em;
-	gap: .3em;
+	display: flex;
+	flex-direction: column;
 	padding: .3em .3em 0;
 	overflow-y: auto;
-}
 
-#high_scores > div:not(#scores_msg) {
-	background: #606060;
-	border-radius: .4em;
-	display: flex;
-	padding: 0 1em;
-	align-items: center;
-	justify-content: space-between;
-}
+	> div:not(#scores_msg) {
+		margin-top: .3em;
+		background: #606060;
+		border-radius: .4em;
+		display: flex;
+		padding: 0 1em;
+		align-items: center;
+		justify-content: space-between;
 
-#high_scores > div:last-child {
-	margin-bottom: .3em;
-}
+		> div {
+			height: 3.5em;
+			width: 3.5em;
+			background-repeat: no-repeat;
+			background-size: 85%;
+			background-position: center;
+			border-radius: 50%;
+			margin: .2em 0;
+			background-color: scale-color(#606060, $lightness: -20%);
+		}
 
-#high_scores > div:not(#scores_msg) > div {
-	height: 3.5em;
-	width: 3.5em;
-	background-repeat: no-repeat;
-	background-size: 85%;
-	background-position: center;
-	border-radius: 50%;
-	margin: .2em 0;
-	background-color: #505050;
-}
+		@mixin images ($letter) {
+			&.score_#{$letter} {
+				&:nth-child(2) > div {
+					background-image: url("/svg/#{$letter}1.svg");
+				}
 
-#high_scores > div.score_p > div {
-	background-image: url(/svg/p+.svg);
-}
+				&:nth-child(3) > div {
+					background-image: url("/svg/#{$letter}2.svg");
+				}
 
-#high_scores > div.score_p:nth-child(2) > div {
-	background-image: url(/svg/p1.svg);
-}
+				&:nth-child(4) > div {
+					background-image: url("/svg/#{$letter}3.svg");
+				}
 
-#high_scores > div.score_p:nth-child(3) > div {
-	background-image: url(/svg/p2.svg);
-}
+				> div {
+					background-image: url("/svg/#{$letter}+.svg");
+					position: relative;
+				}
+			}
+		}
 
-#high_scores > div.score_p:nth-child(4) > div {
-	background-image: url(/svg/p3.svg);
-}
+		@include images(s);
+		@include images(p);
+		@include images(d);
 
-#high_scores > div.score_s > div {
-	background-image: url(/svg/s+.svg);
-}
+		&.score_d > div:after {
+			content: " ";
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url("/svg/psalternate.disconnected.svg");
+		}
 
-#high_scores > div.score_s:nth-child(2) > div {
-	background-image: url(/svg/s1.svg);
-}
-
-#high_scores > div.score_s:nth-child(3) > div {
-	background-image: url(/svg/s2.svg);
-}
-
-#high_scores > div.score_s:nth-child(4) > div {
-	background-image: url(/svg/s3.svg);
-}
-
-#high_scores > div.score_d > div {
-	background-image: url(/svg/d+.svg);
-	position: relative;
-}
-
-#high_scores > div.score_d:nth-child(2) > div {
-	background-image: url(/svg/d1.svg);
-}
-
-#high_scores > div.score_d:nth-child(3) > div {
-	background-image: url(/svg/d2.svg);
-}
-
-#high_scores > div.score_d:nth-child(4) > div {
-	background-image: url(/svg/d3.svg);
-}
-
-#high_scores > div.score_d > div:after {
-	content: " ";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-image: url(/svg/psalternate.disconnected.svg);
-}
-
-#high_scores > div:not(#scores_msg) > span {
-	font-size: 2.25em;
-	color: #FFF;
+		> span {
+			font-size: 2.25em;
+			color: #FFF;
+		}
+	}
 }
 
 body:not(.game_paused) #pause_screen {
@@ -536,7 +505,7 @@ body:not(.scores_err) #scores_msg {
 	display: none;
 }
 
-#high_scores div {
+.scores_err #high_scores > div:not(#scores_msg) {
 	animation-duration: 0.4s;
 	animation-timing-function: ease-in-out;
 	animation-iteration-count: infinite;
@@ -544,28 +513,14 @@ body:not(.scores_err) #scores_msg {
 
 	$normal-color: #606060;
 
-	&#temp_score {
-		@include animation-keyframes {
-			from {
-				background-color: $normal-color;
-			}
+	@include animation-keyframes {
+		from {
+			background-color: $normal-color;
+		}
 
-			to {
-				background-color: scale-color($normal-color, $lightness: 50%);
-			}
-		};
-	}
-
-	&#old_score {
-		@include animation-keyframes {
-			from {
-				background-color: $normal-color;
-			}
-
-			to {
-				background-color: transparent;
-			}
-		};
+		to {
+			background-color: transparentize($normal-color, .5);
+		}
 	}
 }
 
@@ -692,6 +647,10 @@ body:not(.scores_err) #scores_msg {
 @media (max-aspect-ratio: 2/1) {
 	body:not(.playing) #not_playing {
 		display: block;
+	}
+
+	#restart {
+		overflow-y: initial;
 	}
 }
 

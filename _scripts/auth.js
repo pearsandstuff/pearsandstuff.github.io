@@ -125,7 +125,7 @@
 			listeners: {
 				signIn: [],
 				signOut: [],
-				changeUser: [],
+				userChange: [],
 				init: [],
 			},
 			initted: false,

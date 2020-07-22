@@ -17,7 +17,6 @@
 	let pauseScreen = document.getElementById("pause_screen");
 	let statRowLineNumber = document.getElementById("stat_row_line_number");
 	let statRowLinePiece = document.getElementById("stat_row_line_piece");
-	let tempScore = document.getElementById("temp_score");
 	let scoresMsg = document.getElementById("scores_msg");
 
 	// This controls all the game logic and data.
@@ -50,12 +49,15 @@
 					return;
 				}
 
+				let translate = [0,0];
+				let kicks = [0,0];
+
 				if (direction == "CLOCKWISE") {
 					game.piece.rotation = (game.piece.rotation + 90) % 360;
 
 					if (game.piece.type == "I") {
 						// Determine how much the piece should be translated so that it rotates around the middle.
-						let translate = {
+						translate = {
 							0: [-1, 1],
 							90: [2, -1],
 							180: [-2, 2],
@@ -64,7 +66,7 @@
 
 						// If the initial rotation does not fit because of a collision, it can also be translated a couple spots to try to fit.
 						// This keep track of possible translations to try before failing the rotation.
-						let kicks = {
+						kicks = {
 							0: [
 								0, 0,  // No translation
 								1, 0,  // Translate one right
@@ -121,13 +123,13 @@
 						}
 					} else if (game.piece.type != "O") {
 						// Do everything that happened above, but now for every other piece (except O since it does not rotate).
-						let translate = {
+						translate = {
 							0: [0, 0],
 							90: [1, 0],
 							180: [-1, 1],
 							270: [0, -1]
 						}[game.piece.rotation];
-						let kicks = {
+						kicks = {
 							0: [0,0,-1,0,-1,1,0,2,1,-2],
 							90: [0,0,-1,0,-1,1,0,-2,-1,-2],
 							180: [0,0,1,0,1,-1,0,2,1,2],
@@ -154,8 +156,6 @@
 								return;
 							}
 						}
-					} else {
-						let translate = [0,0];
 					}
 					// If the function hasn't returned by now, it means the piece was not rotated.
 					// Undo the rotation and translations and keep the piece exactly as is.
@@ -166,13 +166,13 @@
 					// Do everything that happened above, in the counterclockwise direction.
 					game.piece.rotation = (game.piece.rotation + 270) % 360
 					if (game.piece.type == "I") {
-						let translate = {
+						translate = {
 							0: [-2, 1],
 							90: [2, -2],
 							180: [-1, 2],
 							270: [1, -1]
 						}[game.piece.rotation];
-						let kicks = {
+						kicks = {
 							0: [0,0,2,0,-1,0,2,1,-1,-2],
 							90: [0,0,1,0,-2,0,1,-2,-2,1],
 							180: [0,0,-2,0,1,0,-2,-1,1,2],
@@ -202,13 +202,13 @@
 							}
 						}
 					} else if (game.piece.type != "O") {
-						let translate = {
+						translate = {
 							0: [-1, 0],
 							90: [1, -1],
 							180: [0, 1],
 							270: [0, 0]
 						}[game.piece.rotation];
-						let kicks = {
+						kicks = {
 							0: [0,0,1,0,1,-1,0,2,1,2],
 							90: [0,0,-1,0,-1,1,0,-2,-1,-2],
 							180: [0,0,-1,0,-1,-1,0,2,-1,2],
@@ -237,9 +237,8 @@
 								return;
 							}
 						}
-					} else {
-						let translate = [0,0];
 					}
+
 					game.piece.rotation = (game.piece.rotation + 90) % 360;
 					game.piece.x -= translate[0];
 					game.piece.y -= translate[1];
@@ -651,6 +650,7 @@
 		// `game.end` is used to end the game, and is called either when the user pushes End or they run out of space on the board (i.e. they lose).
 		end: function() {
 			game.started = false;
+			game.scoreUploaded = false;
 			clearInterval(game.gravityInterval);
 			document.body.classList.remove("playing");
 			document.body.setAttribute("data-score", game.stats.score);
@@ -677,7 +677,9 @@
 				statRowLinePiece.children[i].children[1].textContent = formatNumber(game.stats.lineTypes[tetrominoTypes[i]]);
 			}
 
-			// Now get scores from the server to update them.
+			startScreen.scrollTop = 0;
+
+			// Now, get scores from the server to update them.
 			firebase.firestore().collection("tetris").doc("scores").get({
 				source: "server"
 			}).then(function(doc) {
@@ -688,6 +690,7 @@
 					}
 					return;
 				}
+
 				let data = doc.data();
 				game.scores = data.p.map(score => (
 					{
@@ -710,10 +713,11 @@
 				}
 			});
 
+			game.uploadHighScore(game.stats.score);
 			game.updateScores();
 		},
 		// Keeps track of statistics as the game progresses like the number of lines cleared, etc.
-		// Used at the end to dispaly all the statistics to the player after they lose.
+		// Used at the end to display all the statistics to the player after they lose.
 		stats: {
 			lines: null,
 			level: null,
@@ -760,9 +764,9 @@
 		paused: null,
 		// The width of an individual grid block (a "mino").
 		// Used for touch.js to measure how many blocks the tetromino should be moved by when they swipe left and right.
-		minoWidth: (window.game || {minoWidth: null}).minoWidth,
+		minoWidth: window.game ? game.minoWidth : null,
 		// A list of high scores.
-		scores: (window.game || {scores: null}).scores,
+		scores: window.game ? game.scores : null,
 		// See the `dimensions` function definition.
 		dimensions: dimensions,
 		// A boolean indicating if the game has started.
@@ -773,67 +777,73 @@
 				return;
 			}
 
-			let score = document.body.getAttribute("data-score") || "0";
-			let tempScore = document.getElementById("temp_score");
+			for (let i = game.scores.length - 1; i >= 0; i--) {
+				highScores.children[i + 1].innerHTML = `<div></div><span>${formatNumber(game.scores[i].value)}</span>`;
+				highScores.children[i + 1].className = `score_${game.scores[i].owner}`;
+			}
+		},
+		// Checks if there's a new high score and uploads it if so.
+		uploadHighScore: function(newScore) {
+			document.body.classList.remove("scores_err");
+			newScore = newScore || game.stats.score;
 
-			// Check if there's a new high score.
-			if (+score > game.scores.filter(function(score) {
-				return score.owner == auth.userID;
-			})[4].value) {
-				// Show the new high scores screen.
-				document.body.classList.add("new_score");
-				let newScore = {
-					owner: auth.userID,
-					value: +score
+			if (typeof newScore != "number" || newScore <= 0) {
+				return;
+			}
+
+			// Check that newScore is higher than the lowest of the old scores.
+			let oldScores = game.scores.filter(score => score.owner == auth.userID).map(score => score.value);
+			if (newScore > oldScores[oldScores.length - 1] && !game.scoreUploaded) {
+				// Add classes on the body so the appropriate elements show.
+				document.body.classList.add("new_score", "sending_score");
+
+				// Format the scores with the new one to send to firebase.
+				let scoresObj = {
+					// Only the current user's scores are used to leave the other user's alone.
+					[auth.userID]: oldScores
 				};
 
-				// Sort the scores.
-				let scores = game.scores.slice().concat([newScore]).sort((a, b) => b.value - a.value);
+				// Remove the old, lowest score.
+				scoresObj[auth.userID].pop();
+				// Add the new one.
+				scoresObj[auth.userID].push(newScore);
+				// Re-sort them to include the new one.
+				scoresObj[auth.userID] = scoresObj[auth.userID].sort((a, b) => b - a);
 
-				if (highScores.children.length == 11) {
-					highScores.appendChild(document.createElement("div"));
-				} else if (tempScore) {
-					tempScore.id = "";
-				}
+				// Upload the new scores.
+				// If there's a Promise already trying to upload, don't make it upload twice.
+				game.uploadPromise = game.uploadPromise || firebase.firestore().collection("tetris").doc("scores").update(scoresObj).then(function() {
+					// The scores have been uploaded.
+					// Get rid of the "sending score" screen now.
+					document.body.classList.remove("scores_err");
+					document.body.classList.remove("sending_score");
+					game.uploadPromise = null;
+					game.scoreUploaded = true;
+				}).catch(function() {
+					game.uploadPromise = null;
+				});
 
-				// Show all the new scores, and add a special ID to the new one and the old that one will be replaced.
-				// The ID makes them flash so the user knows where the scores will be in relation to the others.
-				let index = 0;
-				for (var i = 0, l = scores.length; i < l; i++) {
-					if (scores[i].owner == auth.userID) {
-						index++;
-					}
-
-					highScores.children[i + 1].id = scores[i] == newScore ? "temp_score" : index == 6 && scores[i].owner == auth.userID ? "old_score" : "";
-					highScores.children[i + 1].innerHTML = `<div></div><span>${formatNumber(scores[i].value)}</span>`;
-					highScores.children[i + 1].className = `score_${scores[i].owner}`;
-				}
-
-				// Reconfigure the password entry form.
-				document.getElementById("pw").value = "";
-				document.getElementById("pw_submit").disabled = false;
-				document.getElementById("new_score_2").firstElementChild.textContent = "Re-enter your password to add it to the high scores list.";
-			} else {
-				if (highScores.children.length == 12) {
-					highScores.removeChild(tempScore ? tempScore : highScores.lastElementChild);
-				}
-
-				for (let i = 0, l = game.scores.length; i < l; i++) {
-					highScores.children[i + 1].id = "";
-					highScores.children[i + 1].innerHTML = `<div></div><span>${formatNumber(game.scores[i].value)}</span>`;
-					highScores.children[i + 1].className = `score_${game.scores[i].owner}`;
-				}
+				// If the uploadPromise does not resolve or reject (e.g. no Internet connection), give it five seconds before assuming a rejection.
+				Promise.race([
+					game.uploadPromise,
+					new Promise(function(resolve, reject) {
+						setTimeout(reject, 5000);
+					})
+				]).catch(function() {
+					// If there was an error, it must've been from a bad connection. Show an error.
+					document.body.classList.add("scores_err");
+					document.body.classList.remove("sending_score");
+				});
 			}
-		}
+		},
+		scoreUploaded: true
 	}
 
-	if (game.scores) {
-		game.updateScores();
-	}
+	game.updateScores();
 
 	// Every seven tetromino pieces, a new "bag" is created that randomly sorts the next seven.
 	// This order is what determines the order of the tetrominos.
-	// It ensures three of the same pieces will never show up in a row and you ge the full variety.
+	// It ensures three of the same pieces will never show up in a row and you get the full variety.
 	// This is how actual Tetris does it.
 	function randomBag() {
 		let bag = ["I", "O", "S", "Z", "L", "J", "T"];
