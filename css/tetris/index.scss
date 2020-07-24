@@ -337,6 +337,10 @@ body.new_score #fin_score {
 	padding: .3em .3em 0;
 	overflow-y: auto;
 
+	> div {
+		flex-shrink: 0;
+	}
+
 	> div:not(#scores_msg) {
 		margin-top: .3em;
 		background: #606060;
